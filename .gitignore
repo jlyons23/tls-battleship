@@ -1,0 +1,13 @@
+# TLS material, generated locally by generate_cert.py, never commit
+server.crt
+server.key
+*.pem
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
