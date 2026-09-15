@@ -1,12 +1,11 @@
 # TLS Battleship: A Protocol With an Untrusted Server
 
-A client-server Battleship game in Python where the security model, not the game, is the
-point. The client assumes the **server is the adversary** and verifies its behaviour
-cryptographically rather than trusting it.
+A client-server Battleship game in Python. The game is mostly a vehicle for the security
+model, where the client treats the server as untrusted and checks cryptographically that
+it played fair.
 
-In ordinary client-server Battleship the server holds the board and simply reports HIT or
-MISS. Nothing stops it moving ships out of the way, or lying about a shot. This
-implementation closes both gaps.
+In ordinary client-server Battleship the server holds the board and reports HIT or MISS.
+Nothing stops it moving ships out of the way, or lying about a shot.
 
 The wire format is documented in [`PROTOCOL.md`](PROTOCOL.md).
 
@@ -38,12 +37,12 @@ kept its board but lied about individual shots, which a commitment alone would n
 
 ## Other defences
 
-- Line-oriented reads with a maximum message length, so a peer cannot exhaust memory by
-  sending an unterminated stream.
+- Line-oriented reads with a maximum message length, so an unterminated stream cannot
+  exhaust memory.
 - Socket timeouts on both ends to drop stalled connections.
 - Server-side rate limiting on incoming shots.
-- Strict format validation on every protocol message, with the connection dropped rather
-  than the input coerced.
+- Strict format validation on every protocol message. Malformed input drops the
+  connection.
 
 ## Running it
 
@@ -91,21 +90,19 @@ tls-battleship/
 ├── secure_server.py   # board generation, commitment, game loop, reveal
 ├── secure_client.py   # TLS setup, cert pinning, gameplay, verification
 ├── generate_cert.py   # self-signed certificate and key generation
-├── startServer.sh     # generates cert if missing, then starts the server
+├── startServer.sh     
 ├── startClient.sh
-├── startServer.bat    # Windows equivalents
+├── startServer.bat    
 └── startClient.bat
 ```
 
 ## Notes and limitations
 
 - The certificate is self-signed and pinned by fingerprint rather than validated against
-  a certificate authority. Pinning gives a strong guarantee against substitution but
-  requires the client to already hold the expected certificate, so it does not scale
-  beyond a known pair of endpoints.
+  a CA. That means the client needs the expected certificate in advance, so it doesn't
+  scale past a known pair of endpoints.
 - The server is single-threaded and handles one client at a time.
 - The commitment proves the server did not change the board mid-game. It does not
   constrain which board the server chose in the first place, so a server could still
   commit to a deliberately awkward layout.
-- Rate limiting drops the connection rather than throttling, which is blunt but keeps the
-  protocol state machine simple.
+- Rate limiting drops the connection rather than throttling.
